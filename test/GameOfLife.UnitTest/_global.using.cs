@@ -1,0 +1,1 @@
+global using LivenessBoardCell = GameOfLife.Core.BoardCell<GameOfLife.Core.Liveness>;
