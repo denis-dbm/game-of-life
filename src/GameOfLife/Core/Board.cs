@@ -16,20 +16,24 @@ public class Board
     private SortedSet<LivenessBoardCell> _cells;
     private SortedSet<LivenessBoardCell> _nextGenCells = [];
 
-    public BoardId Id { get; }
+    public BoardId Id { get; private set; }
     
     public long Generation { get; private set; }
+
+    public IReadOnlySet<LivenessBoardCell> Cells
+    {
+        get => new SortedSet<LivenessBoardCell>(_cells);
+        private set => _cells = [..value];
+    }
+
+    public bool HasMutatedFromLastGeneration { get; private set; }
 
     public Board(BoardId id, long generation, IReadOnlySet<LivenessBoardCell> cells)
     {
         Id = id;
         Generation = generation;
-        _cells = [..cells];
+        Cells = cells;
     }
-
-    public IReadOnlySet<LivenessBoardCell> Cells() => new SortedSet<LivenessBoardCell>(_cells);
-
-    public bool HasMutatedFromLastGeneration { get; private set; }
 
     public long NextGeneration()
     {

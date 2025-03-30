@@ -36,6 +36,8 @@ public readonly struct BoardId
 
     public override int GetHashCode() => Value?.GetHashCode() ?? 0;
 
+    public override string ToString() => Value ?? string.Empty;
+
     public static bool operator ==(BoardId left, BoardId right) => left.Equals(right);
 
     public static bool operator !=(BoardId left, BoardId right) => !(left == right);

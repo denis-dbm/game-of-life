@@ -20,7 +20,7 @@ public class BoardTest
         // Assert
         generation.Should().Be(expectedGeneration);
         board.Generation.Should().Be(expectedGeneration);
-        board.Cells().Should().BeEquivalentTo(expectedNextState.Next);
+        board.Cells.Should().BeEquivalentTo(expectedNextState.Next);
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public class BoardTest
             // Assert
             newGeneration.Should().Be(board.Generation);
             board.Generation.Should().Be(++generation);
-            board.Cells().Should().BeEquivalentTo(expectedNextState.Next);
+            board.Cells.Should().BeEquivalentTo(expectedNextState.Next);
             (expectedNextState.Initial, expectedNextState.Next) = (expectedNextState.Next, expectedNextState.Initial);
         }
 
@@ -101,7 +101,7 @@ public class BoardTest
             _ = board.NextGeneration();
 
             // Assert
-            board.Cells().Count(c => c.State is Alive).Should().Be(5);
+            board.Cells.Count(c => c.State is Alive).Should().Be(5);
 
             // var minCell = board.Cells.Min();
 

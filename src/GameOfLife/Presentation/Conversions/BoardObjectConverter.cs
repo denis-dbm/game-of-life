@@ -20,7 +20,7 @@ public class BoardObjectConverter(BoardMatrixConverter boardMatrixConverter) : I
 
     public BoardState View(Board model)
     {
-        return new(model.Generation, boardMatrixConverter.View(model.Cells()));
+        return new(model.Generation, boardMatrixConverter.View(model.Cells));
     }
 }
 
@@ -47,13 +47,15 @@ public sealed class BoardMatrixConverter :
                     case DeadOrEmpty:
                         continue;
                     case Alive:
-                        cells.Add(new(x++, y++, Liveness.Alive));
+                        cells.Add(new(x, y++, Liveness.Alive));
                         break;
                     default:
                         cells = null;
                         errorMessage = $"Invalid character '{cell}' ({x}, {y}) found in matrix.";
                         return false;
                 }
+
+            x++;
         }
 
         errorMessage = null;
