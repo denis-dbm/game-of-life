@@ -1,0 +1,21 @@
+volumes:
+  mongo:
+  mongo_config:
+
+services:
+  app:
+    build: .
+    depends_on:
+      - storage
+    ports:
+      - 8080:8080
+    environment:
+      GOL_ConnectionStrings:Mongo: mongodb://storage:27017
+
+  storage:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo:/data/db
+      - mongo_config:/data/configdb

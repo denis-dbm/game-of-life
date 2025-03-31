@@ -5,6 +5,8 @@ using GameOfLife.Presentation.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables(prefix: "GOL_");
+
 builder.Services.AddApplicationDependencies(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

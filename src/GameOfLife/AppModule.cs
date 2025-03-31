@@ -4,6 +4,7 @@ using GameOfLife.Presentation;
 using GameOfLife.Presentation.Conversions;
 using GameOfLife.Presentation.ErrorHandling;
 using GameOfLife.Presentation.Serialization;
+using MongoDB.Driver;
 
 namespace GameOfLife;
 
@@ -18,6 +19,8 @@ public static class AppModule
 {
     public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
     {
+        CheckRequiredConfiguration(configuration);
+
         var boardObjectConverter = new BoardObjectConverter();
 
         services.AddMongoPersistence(configuration);
@@ -32,5 +35,21 @@ public static class AppModule
         });
 
         return services;
+    }
+
+    private static void CheckRequiredConfiguration(IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("Mongo");
+        
+        try
+        {
+            _ = MongoUrl.Create(connectionString);
+        }
+        catch (Exception)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"Invalid MongoDB connection string. Set a valid connection string (value={connectionString}). Checkout the README.md for more information.");
+            Environment.Exit(1);
+        }
     }
 }
