@@ -19,7 +19,7 @@ public class MongoBoardRepository(IMongoCollection<Board> collection) : IBoardRe
 
     public async Task<bool> Update(Board board, long originalGeneration, CancellationToken cancellationToken)
     {
-        var result = await collection.ReplaceOneAsync(x => x.Id == board.Id && x.Generation == board.Generation, board, cancellationToken: cancellationToken);
+        var result = await collection.ReplaceOneAsync(x => x.Id == board.Id && x.Generation == originalGeneration, board, cancellationToken: cancellationToken);
         return result.ModifiedCount > 0;
     }
 }
