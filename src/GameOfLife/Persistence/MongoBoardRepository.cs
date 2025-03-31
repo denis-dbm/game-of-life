@@ -17,9 +17,9 @@ public class MongoBoardRepository(IMongoCollection<Board> collection) : IBoardRe
         return result.DeletedCount > 0;
     }
 
-    public async Task<bool> Update(Board board, CancellationToken cancellationToken)
+    public async Task<bool> Update(Board board, long originalGeneration, CancellationToken cancellationToken)
     {
-        var result = await collection.ReplaceOneAsync(x => x.Id == board.Id, board, cancellationToken: cancellationToken);
+        var result = await collection.ReplaceOneAsync(x => x.Id == board.Id && x.Generation == board.Generation, board, cancellationToken: cancellationToken);
         return result.ModifiedCount > 0;
     }
 }

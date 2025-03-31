@@ -2,6 +2,7 @@ using GameOfLife.Core;
 using GameOfLife.Persistence;
 using GameOfLife.Presentation;
 using GameOfLife.Presentation.Conversions;
+using GameOfLife.Presentation.ErrorHandling;
 using GameOfLife.Presentation.Serialization;
 
 namespace GameOfLife;
@@ -17,10 +18,13 @@ public static class AppModule
 {
     public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
     {
+        var boardObjectConverter = new BoardObjectConverter();
+
         services.AddMongoPersistence(configuration);
-        services.AddSingleton<IInputConverter<BoardState, Board>, BoardObjectConverter>();
-        services.AddSingleton<IOutputConverter<Board, BoardState>, BoardObjectConverter>();
-        services.AddSingleton<BoardMatrixConverter>();
+        services.AddSingleton<IInputConverter<BoardState, Board>>(boardObjectConverter);
+        services.AddSingleton<IOutputConverter<Board, ReadOnlyBoardState>>(boardObjectConverter);
+        services.AddExceptionHandler<ExceptionHandler>();
+        services.AddProblemDetails();
 
         services.ConfigureHttpJsonOptions(options =>
         {

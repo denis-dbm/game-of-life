@@ -1,5 +1,7 @@
 using GameOfLife.Core;
 using GameOfLife.Persistence.Mapping;
+using MongoDB.Bson.IO;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace GameOfLife.Persistence;
@@ -18,7 +20,8 @@ public static class MongoPersistenceModule
 
         BoardIdSerializer.Enable();
         LowerCaseElementNameConvention.Enable();
-
+        LoadSerializers();
+        
         AddRepository<Board, IBoardRepository, MongoBoardRepository>(services, database, collectionName: "boards");
 
         return services;
@@ -31,5 +34,15 @@ public static class MongoPersistenceModule
             services.AddSingleton(database.GetCollection<TCollection>(collectionName));
             return services.AddSingleton<TRepository, TRepositoryImpl>();
         }
+    }
+
+    /// <summary>
+    /// Setups by convention the needed serializers for the MongoDB persistence.
+    /// This implementation generates fake writes to ensure registration of the serializers for "complex" (i.e. have a set) types.
+    /// </summary>
+    private static void LoadSerializers()
+    {
+        var writer = new BsonBinaryWriter(Stream.Null);
+        BsonSerializer.Serialize(writer, new Board(BoardId.New(), 0, new HashSet<LivenessBoardCell>()));
     }
 }

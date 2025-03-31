@@ -10,19 +10,26 @@ public static class BoardExtensions
         if (generations < 1)
             throw new ArgumentOutOfRangeException(nameof(generations), "Number of generations to run must be greater than 0.");
 
+        int i;
         ranBoard = new Board(board.Id, board.Generation, board.Cells);
 
-        for (int i = 0; i < generations - 1; i++)
+        for (i = 0; i < generations; i++)
+        {
             _ = ranBoard.NextGeneration();
 
-        _ = ranBoard.NextGeneration();
-        
-        if (expectFinalState && ranBoard.HasMutatedFromLastGeneration)
-        {
-            ranBoard = board;
-            return false;
+            if (!ranBoard.HasMutatedFromLastGeneration)
+                break;
         }
 
-        return true;
+        long currentGeneration = ranBoard.Generation;
+        bool prematureEnd = i < generations - 1;
+        bool isUnfinished = expectFinalState && ranBoard.HasMutatedFromLastGeneration && ranBoard.NextGeneration(freezeOnNonMutation: true) != currentGeneration;
+
+        if (isUnfinished)
+            ranBoard = board;
+        else if (prematureEnd && !ranBoard.HasMutatedFromLastGeneration)
+            ranBoard.SetGeneration(currentGeneration + (generations - (i + 1)));
+
+        return ranBoard != board;
     }
 }

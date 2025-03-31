@@ -8,7 +8,7 @@ public class BoardTest
 {
     [Theory]
     [MemberData(nameof(SampleLoopingPatternsCellsState))]
-    public void GivenStateAsInitialOrNot_ShouldBeAsExpected(ExpectedNextState expectedNextState)
+    public void NextGeneration_WithSampleLoopingPatterns_ShouldRunNextGeneration(ExpectedNextState expectedNextState)
     {
         // Arrange
         const long expectedGeneration = 1;
@@ -25,7 +25,7 @@ public class BoardTest
 
     [Theory]
     [MemberData(nameof(SampleLoopingPatternsCellsState))]
-    public void GivenLoopingPatterns_ShouldProcessTheLifeInfinitely(ExpectedNextState expectedNextState)
+    public void NextGeneration_WithSampleLoopingPatterns_ShouldProcessTheLifeInfinitely(ExpectedNextState expectedNextState)
     {
         // Arrange
         const int times = 50;
@@ -49,72 +49,38 @@ public class BoardTest
     }
 
     [Fact]
-    public void GivenGliderPattern_ShouldProcessTheLifeInfinitely()
+    public void SetGeneration_ShouldSetTheGeneration_WhenBoardDidNotMutate()
     {
         // Arrange
-        const int times = 100;
-        HashSet<LivenessBoardCell> cells = [
-            new LivenessBoardCell(0, 0, Alive),
-            new LivenessBoardCell(1, 0, Alive),
-            new LivenessBoardCell(2, 0, Alive),
-            new LivenessBoardCell(0, 1, Alive),
-            new LivenessBoardCell(1, 2, Alive)
-        ];
-        var board = new Board(BoardId.New(), generation: 0, cells);
-        
-        LivenessBoardCell[][] cellsFromMinPosition = [
-            [
-                new(1, 0, Alive),
-                new(2, 0, Alive),
-                new(0, 1, Alive),
-                new(1, 2, Alive),
-            ],
-            [
-                new(1, 0, Alive),
-                new(0, 1, Alive),
-                new(2, 1, Alive),
-                new(1, -1, Alive),
-            ],
-            [
-                new(1, 0, Alive),
-                new(0, 1, Alive),
-                new(0, 2, Alive),
-                new(2, 1, Alive),
-            ],
-            [
-                new(1, 0, Alive),
-                new(2, 1, Alive),
-                new(1, -1, Alive),
-                new(1, -2, Alive),
-            ],
-            [
-                new(1, 0, Alive),
-                new(2, 0, Alive),
-                new(0, -1, Alive),
-                new(1, -2, Alive),
-            ]
-        ];
+        const long expectedGeneration = 2;
+        var board = new Board(BoardId.New(), generation: 0, new HashSet<LivenessBoardCell>());
 
-        for (int i = 0; i < times; i++)
-        {
-            // Act
-            _ = board.NextGeneration();
-
-            // Assert
-            board.Cells.Count(c => c.State is Alive).Should().Be(5);
-
-            // var minCell = board.Cells.Min();
-
-            // foreach (var cell in cellsFromMinPosition)
-            // {
-            //     long x = minCell.X + cell.X;
-            //     long y = minCell.Y;
-            //     board.Cells.Contains(new LivenessBoardCell(x, y, Alive)).Should().BeTrue();
-            // }
-        }
+        // Act
+        board.NextGeneration();
+        board.SetGeneration(board.Generation + 1);
 
         // Assert
-        board.Generation.Should().Be(times);
+        board.Generation.Should().Be(expectedGeneration);
+    }
+
+    [Fact]
+    public void SetGeneration_ShouldNotSetTheGeneration_WhenBoardMutated()
+    {
+        // Arrange
+        var board = new Board(BoardId.New(), generation: 0, new HashSet<LivenessBoardCell>()
+        {
+            new(0, 0, Alive),
+            new(1, 0, Alive),
+            new(2, 0, Alive)
+        });
+
+        // Act
+        board.NextGeneration();
+        Action act = () => board.SetGeneration(board.Generation + 1);
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Cannot set generation when the board has mutated from the last generation.");
     }
 
     public static IEnumerable<object[]> SampleLoopingPatternsCellsState()

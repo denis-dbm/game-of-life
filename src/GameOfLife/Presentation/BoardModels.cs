@@ -17,7 +17,7 @@ public record RunNextBoardStateRequest(long Generations, bool DryRun, bool Expec
 /// Represents a response containing the next state of the board.
 /// </summary>
 /// <param name="Board">The board state.</param>
-public record RunNextBoardStateResponse(BoardState Board);
+public record RunNextBoardStateResponse(ReadOnlyBoardState Board);
 
 /// <summary>
 /// Represents the board state.
@@ -25,3 +25,10 @@ public record RunNextBoardStateResponse(BoardState Board);
 /// <param name="Generation">The number of the generation where the board is.</param>
 /// <param name="Cells">A array of strings to represent the board state according to the Game of Life rules.</param>
 public record BoardState(long Generation, IEnumerable<string> Cells);
+/// <summary>
+/// Represents the board state.
+/// </summary>
+/// <param name="Generation">The number of the generation where the board is.</param>
+/// <param name="Cells">A array of strings to represent the board state according to the Game of Life rules.</param>
+/// <param name="Population">The number of alive cells in the board.</param>
+public record ReadOnlyBoardState(long Generation, IEnumerable<string> Cells, int Population) : BoardState(Generation, Cells);

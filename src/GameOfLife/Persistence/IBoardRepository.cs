@@ -8,7 +8,7 @@ public interface IBoardRepository
 
     Task<Board?> Get(BoardId boardId, CancellationToken cancellationToken);
 
-    Task<bool> Update(Board board, CancellationToken cancellationToken);
+    Task<bool> Update(Board board, long originalGeneration, CancellationToken cancellationToken);
 
     Task<bool> Remove(BoardId boardId, CancellationToken cancellationToken);
 }

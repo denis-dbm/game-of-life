@@ -68,10 +68,11 @@ public static class BoardEndpoints
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <response code="200">The board was found and returned.</response>
+    /// <response code="400">Invalid format of ID was supplied.</response>
     /// <response code="404">The board was not found.</response>
-    public static async Task<Results<Ok<BoardState>, NotFound>> Get(
+    public static async Task<Results<Ok<ReadOnlyBoardState>, NotFound>> Get(
         [FromServices] IBoardRepository boardRepository,
-        [FromServices] IOutputConverter<Board, BoardState> outputConverter,
+        [FromServices] IOutputConverter<Board, ReadOnlyBoardState> outputConverter,
         [FromRoute] BoardId boardId,
         CancellationToken cancellationToken)
     {
@@ -93,12 +94,13 @@ public static class BoardEndpoints
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <response code="200">The board was found and the next state was returned respecting the required state.</response>
+    /// <response code="400">Invalid format of ID was supplied.</response>
     /// <response code="404">The board was not found.</response>
     /// <response code="409">The board was not found in the database after processing.</response>
     /// <response code="412">The board does not meet the required state after the specified generations.</response>
     public static async Task<Results<Ok<RunNextBoardStateResponse>, NotFound, Conflict<string>, ContentHttpResult>> RunNextState(
         [FromServices] IBoardRepository boardRepository,
-        [FromServices] IOutputConverter<Board, BoardState> outputConverter,
+        [FromServices] IOutputConverter<Board, ReadOnlyBoardState> outputConverter,
         [FromRoute] BoardId boardId,
         [FromBody] RunNextBoardStateRequest request,
         CancellationToken cancellationToken)
@@ -108,11 +110,13 @@ public static class BoardEndpoints
         if (board is null)
             return NotFound();
 
+        long originalGeneration = board.Generation;
+
         if (!board.TryRunGenerations(request.Generations, request.ExpectFinalState, out board))
             return Text(statusCode: 412, content: $"The board does not meet the required state after {request.Generations} generation(s).");
 
-        if (!request.DryRun && !await boardRepository.Update(board, cancellationToken))
-            return Conflict("The board was not found in the database. So, the ran state has been discarded.");
+        if (!request.DryRun && !await boardRepository.Update(board, originalGeneration, cancellationToken))
+            return Conflict("The board was not found in the database or it was updated by other request. So, the ran state has been discarded.");
 
         return Ok(new RunNextBoardStateResponse(outputConverter.View(board)));
     }
@@ -124,8 +128,9 @@ public static class BoardEndpoints
     /// <param name="boardId"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="204">The board was deleted successfully.</response>
+    /// <response code="400">Invalid format of ID was supplied.</response>
     /// <response code="404">The board was not found.</response>
-    public static async Task<Results<NotFound, NoContent>> Delete(
+    public static async Task<Results<NoContent, NotFound>> Delete(
         [FromServices] IBoardRepository boardRepository,
         [FromRoute] BoardId boardId,
         CancellationToken cancellationToken)
